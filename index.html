@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Sports Scores | All Leagues</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-alt: #0b1020;
+      --card-bg: #111827;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.1);
+      --accent-danger: #ef4444;
+      --accent-muted: #6b7280;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #1f2933;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px 12px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1120px;
+      background: linear-gradient(145deg, #020617 0, #020617 45%, #020617 100%);
+      border-radius: 28px;
+      padding: 20px 20px 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      backdrop-filter: blur(18px);
+    }
+
+    @media (min-width: 768px) {
+      .app-shell {
+        padding: 24px 26px 30px;
+      }
+    }
+
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 640px) {
+      .app-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.85);
+    }
+
+    .subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      justify-content: flex-start;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.8);
+    }
+
+    .pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+
+    .tab-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      padding: 7px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.16s ease-out;
+    }
+
+    .tab-btn span {
+      font-size: 0.72rem;
+      opacity: 0.8;
+    }
+
+    .tab-btn.active {
+      background: radial-gradient(circle at top left, #22c55e 0, #16a34a 50%, #15803d 100%);
+      color: #ecfdf5;
+      border-color: rgba(34, 197, 94, 0.9);
+      box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.3),
+                  0 14px 30px rgba(22, 163, 74, 0.45);
+    }
+
+    .tab-btn.active span {
+      opacity: 1;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .toolbar label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .input-shell {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+    }
+
+    .input-shell input[type="date"] {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    .input-shell input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
+    }
+
+    .button {
+      border-radius: 999px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text);
+      font-size: 0.8rem;
+      padding: 7px 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.16s ease-out;
+    }
+
+    .button:hover {
+      border-color: rgba(148, 163, 184, 0.9);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .button-ghost {
+      background: transparent;
+    }
+
+    .status-text {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+    }
+
+    .status-dot.error {
+      background: var(--accent-danger);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.9);
+    }
+
+    .main-panel {
+      border-radius: 22px;
+      padding: 14px 14px 16px;
+      background: radial-gradient(circle at top left, #0f172a 0, #020617 55%);
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      min-height: 280px;
+    }
+
+    .games-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (min-width: 640px) {
+      .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .games-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .game-card {
+      background: radial-gradient(circle at top, #111827 0, #020617 70%);
+      border-radius: 18px;
+      padding: 10px 10px 11px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .game-status {
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      background: rgba(15, 23, 42, 0.85);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .game-status.live {
+      border-color: rgba(34, 197, 94, 0.9);
+      background: var(--accent-soft);
+      color: #bbf7d0;
+    }
+
+    .game-status.final {
+      border-color: rgba(148, 163, 184, 0.8);
+      color: #e5e7eb;
+    }
+
+    .game-status.scheduled {
+      border-color: rgba(55, 65, 81, 0.9);
+      color: var(--text-muted);
+    }
+
+    .status-ticker {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+      animation: pulse 1.2s infinite;
+    }
+
+    .status-ticker.final {
+      background: rgba(148, 163, 184, 0.9);
+      box-shadow: none;
+      animation: none;
+    }
+
+    .status-ticker.scheduled {
+      background: rgba(148, 163, 184, 0.6);
+      box-shadow: none;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.45); opacity: 0.4; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .game-body {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .team-name {
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team-name.away {
+      color: var(--text-muted);
+    }
+
+    .team-score {
+      font-size: 0.9rem;
+      font-weight: 600;
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .team-score.leading {
+      color: #bbf7d0;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .meta-pill {
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.85);
+      background: rgba(15, 23, 42, 0.8);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .empty-state {
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .empty-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px dashed rgba(75, 85, 99, 0.8);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    .small-muted {
+      font-size: 0.7rem;
+      color: rgba(148, 163, 184, 0.8);
+    }
+
+    .footer {
+      margin-top: 12px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="title-block">
+        <div class="app-title">
+          LiveBoard
+          <span class="badge">
+            <span class="badge-dot"></span>
+            Live multi-league scores
+          </span>
+        </div>
+        <div class="subtitle">
+          One dashboard for NBA, NFL, MLB, NHL, college, and soccer scores.
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="pill">Auto-refresh: <strong>60s</strong></div>
+        <div class="dot"></div>
+        <div>Timezone: <span id="timezoneLabel"></span></div>
+      </div>
+    </header>
+
+    <div id="leagueTabs" class="tabs"></div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="input-shell">
+          <label for="datePicker">Date</label>
+          <input type="date" id="datePicker" />
+        </div>
+        <button id="todayBtn" class="button button-ghost" type="button">
+          Today
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <button id="refreshBtn" class="button" type="button">
+          ⟲ Refresh
+        </button>
+        <div class="status-text" id="statusText">
+          <span class="status-dot"></span>
+          <span>Live connection ready</span>
+        </div>
+      </div>
+    </div>
+
+    <main class="main-panel">
+      <div id="gamesContainer" class="games-grid"></div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="empty-icon">🏟️</div>
+        <div>No games found for this league and day.</div>
+        <div class="small-muted">
+          Try a different league or date. Once wired to a real scores API,
+          games will stream in live here.
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div id="lastUpdatedText">Last updated: —</div>
+      <div class="small-muted">
+        Tip: Connect <code>/api/scores</code> on your backend to any sports
+        data provider and map results into the simple game format used here.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ==============================
+    // CONFIG
+    // ==============================
+
+    // Replace this with your backend endpoint that aggregates all leagues.
+    const API_BASE_URL = "/api/scores";
+
+    // These are the leagues we show as tabs.
+    const LEAGUES = [
+      { id: "nba", label: "NBA", short: "NBA" },
+      { id: "nfl", label: "NFL", short: "NFL" },
+      { id: "mlb", label: "MLB", short: "MLB" },
+      { id: "nhl", label: "NHL", short: "NHL" },
+      { id: "ncaaf", label: "NCAAF", short: "CFB" },
+      { id: "soccer", label: "Soccer", short: "Fútbol" },
+    ];
+
+    // Demo fallback data (used only if the API call fails).
+    const DEMO_GAMES = [
+      {
+        id: "demo1",
+        league: "nba",
+        home_team: "Los Angeles Lakers",
+        away_team: "Golden State Warriors",
+        home_score: 102,
+        away_score: 99,
+        status: "in_progress",
+        status_detail: "4:21 Q4",
+        start_time: new Date().toISOString(),
+        venue: "Crypto.com Arena",
+      },
+      {
+        id: "demo2",
+        league: "nfl",
+        home_team: "San Francisco 49ers",
+        away_team: "Dallas Cowboys",
+        home_score: 24,
+        away_score: 27,
+        status: "final",
+        status_detail: "Final",
+        start_time: new Date().toISOString(),
+        venue: "Levi's Stadium",
+      },
+      {
+        id: "demo3",
+        league: "soccer",
+        home_team: "FC Barcelona",
+        away_team: "Real Madrid",
+        home_score: 1,
+        away_score: 1,
+        status: "scheduled",
+        status_detail: "Today 19:00",
+        start_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        venue: "Camp Nou",
+      },
+    ];
+
+    // Auto-refresh interval in ms.
+    const AUTO_REFRESH_MS = 60_000;
+
+    // ==============================
+    // STATE
+    // ==============================
+
+    let currentLeagueId = LEAGUES[0].id;
+    let autoRefreshTimer = null;
+
+    // ==============================
+    // HELPERS
+    // ==============================
+
+    function formatDateToInput(date) {
+      return date.toISOString().slice(0, 10);
+    }
+
+    function formatTimeShort(dateStr) {
+      if (!dateStr) return "—";
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "—";
+      return d.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+
+    function formatLastUpdated(date) {
+      return date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    }
+
+    function createElement(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text !== undefined) el.textContent = text;
+      return el;
+    }
+
+    function setStatus(message, isError = false) {
+      const statusText = document.getElementById("statusText");
+      const dot = statusText.querySelector(".status-dot");
+      const label = statusText.querySelector("span:nth-child(2)");
+      dot.classList.toggle("error", isError);
+      label.textContent = message;
+    }
+
+    function setLastUpdated() {
+      const el = document.getElementById("lastUpdatedText");
+      el.textContent = "Last updated: " + formatLastUpdated(new Date());
+    }
+
+    // ==============================
+    // API
+    // ==============================
+
+    async function fetchScores(leagueId, dateStr) {
+      // Expected response from your backend:
+      // {
+      //   games: [
+      //     {
+      //       id: string,
+      //       league: string,
+      //       home_team: string,
+      //       away_team: string,
+      //       home_score: number | null,
+      //       away_score: number | null,
+      //       status: "scheduled" | "in_progress" | "final",
+      //       status_detail: string, // "Q3 5:21", "Final", "1st Half", etc.
+      //       start_time: ISO8601 string,
+      //       venue?: string
+      //     },
+      //     ...
+      //   ]
+      // }
+      const url = `${API_BASE_URL}?league=${encodeURIComponent(
+        leagueId
+      )}&date=${encodeURIComponent(dateStr)}`;
+
+      const res = await fetch(url, { cache: "no-store" });
+
+      if (!res.ok) {
+        throw new Error("API error " + res.status);
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data.games)) return data.games;
+      return [];
+    }
+
+    async function loadScores() {
+      const dateInput = document.getElementById("datePicker");
+      const gamesContainer = document.getElementById("gamesContainer");
+      const emptyState = document.getElementById("emptyState");
+
+      const dateStr = dateInput.value;
+
+      setStatus("Loading live scores…");
+      gamesContainer.innerHTML = "";
+      emptyState.style.display = "none";
+
+      try {
+        let games = await fetchScores(currentLeagueId, dateStr);
+
+        // If API returned nothing, optionally fall back to demo data.
+        if (!games || games.length === 0) {
+          // Filter demo games by league for preview mode.
+          games = DEMO_GAMES.filter((g) => g.league === currentLeagueId);
+        }
+
+        if (!games || games.length === 0) {
+          emptyState.style.display = "flex";
+        } else {
+          renderGames(games);
+        }
+
+        setStatus("Live data updated");
+        setLastUpdated();
+      } catch (err) {
+        console.error("Error loading scores:", err);
+        setStatus("API error – showing demo data", true);
+
+        // Fallback: show demo data for the selected league.
+        const games = DEMO_GAMES.filter((g) => g.league === currentLeagueId);
+        if (!games || games.length === 0) {
+          emptyState.style.display = "flex";
+        } else {
+          renderGames(games);
+        }
+        setLastUpdated();
+      }
+    }
+
+    // ==============================
+    // RENDERING
+    // ==============================
+
+    function renderLeagueTabs() {
+      const tabsContainer = document.getElementById("leagueTabs");
+      tabsContainer.innerHTML = "";
+
+      LEAGUES.forEach((league) => {
+        const btn = createElement("button", "tab-btn");
+        btn.type = "button";
+        btn.dataset.leagueId = league.id;
+
+        const label = createElement("span", "", league.label);
+        const short = createElement("span", "", league.short);
+
+        btn.appendChild(label);
+        btn.appendChild(short);
+
+        if (league.id === currentLeagueId) {
+          btn.classList.add("active");
+        }
+
+        btn.addEventListener("click", () => {
+          if (currentLeagueId === league.id) return;
+          currentLeagueId = league.id;
+          Array.from(tabsContainer.children).forEach((tab) =>
+            tab.classList.remove("active")
+          );
+          btn.classList.add("active");
+          loadScores();
+        });
+
+        tabsContainer.appendChild(btn);
+      });
+    }
+
+    function renderGames(games) {
+      const gamesContainer = document.getElementById("gamesContainer");
+      gamesContainer.innerHTML = "";
+
+      games.forEach((game) => {
+        const card = createElement("div", "game-card");
+
+        // Header
+        const header = createElement("div", "game-header");
+        const leagueLabel = createElement(
+          "div",
+          "",
+          (game.league || currentLeagueId).toUpperCase()
+        );
+
+        const status = createElement("div", "game-status");
+        const statusDot = createElement("span", "status-ticker");
+        const normalizedStatus = (game.status || "scheduled").toLowerCase();
+
+        if (normalizedStatus === "in_progress") {
+          status.classList.add("live");
+        } else if (normalizedStatus === "final") {
+          status.classList.add("final");
+          statusDot.classList.add("final");
+        } else {
+          status.classList.add("scheduled");
+          statusDot.classList.add("scheduled");
+        }
+
+        const statusText = createElement(
+          "span",
+          "",
+          game.status_detail ||
+            (normalizedStatus === "in_progress"
+              ? "Live"
+              : normalizedStatus === "final"
+              ? "Final"
+              : "Scheduled")
+        );
+
+        status.appendChild(statusDot);
+        status.appendChild(statusText);
+
+        header.appendChild(leagueLabel);
+        header.appendChild(status);
+
+        // Body: teams
+        const body = createElement("div", "game-body");
+
+        const homeScore = game.home_score ?? "";
+        const awayScore = game.away_score ?? "";
+
+        const homeLeading =
+          typeof homeScore === "number" &&
+          typeof awayScore === "number" &&
+          homeScore > awayScore;
+
+        const awayLeading =
+          typeof homeScore === "number" &&
+          typeof awayScore === "number" &&
+          awayScore > homeScore;
+
+        const homeRow = createElement("div", "team-row");
+        const homeName = createElement("div", "team-name", game.home_team);
+        const homeScoreEl = createElement(
+          "div",
+          "team-score" + (homeLeading ? " leading" : ""),
+          homeScore === "" ? "—" : String(homeScore)
+        );
+        homeRow.appendChild(homeName);
+        homeRow.appendChild(homeScoreEl);
+
+        const awayRow = createElement("div", "team-row");
+        const awayName = createElement(
+          "div",
+          "team-name away",
+          game.away_team
+        );
+        const awayScoreEl = createElement(
+          "div",
+          "team-score" + (awayLeading ? " leading" : ""),
+          awayScore === "" ? "—" : String(awayScore)
+        );
+        awayRow.appendChild(awayName);
+        awayRow.appendChild(awayScoreEl);
+
+        body.appendChild(homeRow);
+        body.appendChild(awayRow);
+
+        // Meta
+        const metaRow = createElement("div", "meta-row");
+        const leftMeta = createElement(
+          "div",
+          "",
+          (game.venue || "").length ? game.venue : ""
+        );
+        const metaPill = createElement("div", "meta-pill");
+        const timeIcon = createElement("span", "", "🕒");
+        const timeText = createElement(
+          "span",
+          "",
+          formatTimeShort(game.start_time)
+        );
+        metaPill.appendChild(timeIcon);
+        metaPill.appendChild(timeText);
+
+        metaRow.appendChild(leftMeta);
+        metaRow.appendChild(metaPill);
+
+        card.appendChild(header);
+        card.appendChild(body);
+        card.appendChild(metaRow);
+
+        gamesContainer.appendChild(card);
+      });
+    }
+
+    // ==============================
+    // INIT
+    // ==============================
+
+    function initDatePicker() {
+      const dateInput = document.getElementById("datePicker");
+      const today = new Date();
+      dateInput.value = formatDateToInput(today);
+
+      document.getElementById("todayBtn").addEventListener("click", () => {
+        const now = new Date();
+        dateInput.value = formatDateToInput(now);
+        loadScores();
+      });
+
+      dateInput.addEventListener("change", () => {
+        loadScores();
+      });
+    }
+
+    function initToolbar() {
+      document
+        .getElementById("refreshBtn")
+        .addEventListener("click", () => loadScores());
+
+      const tzLabel = document.getElementById("timezoneLabel");
+      try {
+        tzLabel.textContent =
+          Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+      } catch {
+        tzLabel.textContent = "Local";
+      }
+    }
+
+    function startAutoRefresh() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = setInterval(() => {
+        loadScores();
+      }, AUTO_REFRESH_MS);
+    }
+
+    function init() {
+      renderLeagueTabs();
+      initDatePicker();
+      initToolbar();
+      startAutoRefresh();
+      loadScores();
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
